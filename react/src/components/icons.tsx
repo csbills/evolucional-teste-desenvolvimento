@@ -1,5 +1,5 @@
 export const Icons = {
-  Box: (props: React.SVGProps<SVGSVGElement>) => (
+  Box: () => (
     <svg
       viewBox="0 0 24 24"
       fill="none"
@@ -15,7 +15,7 @@ export const Icons = {
       />
     </svg>
   ),
-  Plus: (props: React.SVGProps<SVGSVGElement>) => (
+  Plus: () => (
     <svg
       viewBox="0 0 24 24"
       fill="none"
@@ -27,7 +27,7 @@ export const Icons = {
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14M5 12h14" />
     </svg>
   ),
-  Search: (props: React.SVGProps<SVGSVGElement>) => (
+  Search: () => (
     <svg
       viewBox="0 0 24 24"
       fill="none"
@@ -38,6 +38,30 @@ export const Icons = {
     >
       <circle cx="11" cy="11" r="7" />
       <path strokeLinecap="round" d="m20 20-4-4" />
+    </svg>
+  ),
+  ChevronLeft: () => (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      className="size-4"
+      aria-hidden="true"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d="m15 18-6-6 6-6" />
+    </svg>
+  ),
+  ChevronRight: () => (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      className="size-4"
+      aria-hidden="true"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" />
     </svg>
   ),
 }

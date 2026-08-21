@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { getProducts } from '../../services/product.service'
 
 interface UseProductsParams {
@@ -12,5 +12,6 @@ export function useProducts(params: UseProductsParams) {
   return useQuery({
     queryKey: ['products', params],
     queryFn: () => getProducts(params),
+    placeholderData: keepPreviousData,
   })
 }

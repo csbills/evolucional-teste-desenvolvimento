@@ -1,5 +1,14 @@
+import { useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
+
 import { Icons } from '../../components/icons'
 import { useProducts } from '../../hooks/products/useProducts'
+import {
+  getPaginationItems,
+  PRODUCTS_PAGE_SIZE,
+  parseProductSearchParams,
+  updateProductSearchParams,
+} from './productsPagination'
 
 const categories = [
   { key: 'Perifericos', name: 'Periféricos' },
@@ -11,10 +20,42 @@ const categories = [
 ]
 
 export function ProductsPage() {
-  const { data, isLoading, isError, refetch } = useProducts({
-    page: 1,
-    limit: 10,
+  const [searchParams, setSearchParams] = useSearchParams()
+  const { page, search, category } = parseProductSearchParams(searchParams)
+  const { data, isLoading, isFetching, isError, refetch } = useProducts({
+    page,
+    limit: PRODUCTS_PAGE_SIZE,
+    search,
+    category,
   })
+
+  const paginationItems = data ? getPaginationItems(page, data.totalPages) : []
+  const hasFilters = Boolean(search || category)
+  const displayedPage = data?.page ?? page
+  const firstItem =
+    data && data.total > 0 ? (displayedPage - 1) * data.limit + 1 : 0
+  const lastItem = data ? Math.min(displayedPage * data.limit, data.total) : 0
+
+  useEffect(() => {
+    if (!data) {
+      return
+    }
+
+    const lastAvailablePage = Math.max(data.totalPages, 1)
+
+    if (page > lastAvailablePage) {
+      setSearchParams(
+        updateProductSearchParams(searchParams, { page: lastAvailablePage }),
+        { replace: true },
+      )
+    }
+  }, [data, page, searchParams, setSearchParams])
+
+  const handlePageChange = (nextPage: number) => {
+    setSearchParams(updateProductSearchParams(searchParams, { page: nextPage }))
+  }
+
+  let ellipsisCount = 0
 
   return (
     <div className="space-y-6">
@@ -45,12 +86,31 @@ export function ProductsPage() {
             <input
               type="search"
               placeholder="Buscar por nome..."
+              aria-label="Buscar produtos por nome"
+              value={search ?? ''}
+              onChange={(event) => {
+                setSearchParams(
+                  updateProductSearchParams(searchParams, {
+                    search: event.target.value,
+                  }),
+                  { replace: true },
+                )
+              }}
               className="h-10 w-full rounded-lg border border-gray-300 bg-white pl-9 pr-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-gray-400 focus:ring-2 focus:ring-gray-100"
             />
           </div>
 
           <select
-            defaultValue=""
+            aria-label="Filtrar produtos por categoria"
+            value={category ?? ''}
+            onChange={(event) => {
+              setSearchParams(
+                updateProductSearchParams(searchParams, {
+                  category: event.target.value,
+                }),
+                { replace: true },
+              )
+            }}
             className="h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-700 outline-none transition focus:border-gray-400 focus:ring-2 focus:ring-gray-100 sm:w-52"
           >
             <option value="">Todas as categorias</option>
@@ -62,8 +122,8 @@ export function ProductsPage() {
           </select>
         </div>
 
-        <div className="overflow-x-auto px-5 mt-4">
-          <table className="w-full min-w-180 text-left">
+        <div className="mt-4 overflow-x-auto px-5">
+          <table className="w-full min-w-180 text-left" aria-busy={isFetching}>
             <thead>
               <tr>
                 <th className="text-[#101828] text-sm font-semibold leading-5">
@@ -89,6 +149,45 @@ export function ProductsPage() {
             </thead>
 
             <tbody>
+              {isLoading && !data && (
+                <tr>
+                  <td colSpan={5} className="px-6 py-16 text-center">
+                    <p
+                      className="text-sm text-gray-500"
+                      role="status"
+                      aria-live="polite"
+                    >
+                      Carregando produtos...
+                    </p>
+                  </td>
+                </tr>
+              )}
+
+              {isError && (
+                <tr>
+                  <td colSpan={5} className="px-6 py-16 text-center">
+                    <div className="mx-auto flex max-w-sm flex-col items-center">
+                      <h2 className="text-sm font-medium text-gray-900">
+                        Não foi possível carregar os produtos
+                      </h2>
+
+                      <p className="mt-1 text-sm text-gray-500">
+                        Verifique a conexão com a API e tente novamente.
+                      </p>
+
+                      <button
+                        type="button"
+                        onClick={() => void refetch()}
+                        disabled={isFetching}
+                        className="mt-4 inline-flex h-9 items-center justify-center rounded-lg border border-gray-300 px-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        Tentar novamente
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              )}
+
               {!isLoading && !isError && data?.data.length === 0 && (
                 <tr>
                   <td colSpan={5} className="px-6 py-16 text-center">
@@ -102,69 +201,147 @@ export function ProductsPage() {
                       </h2>
 
                       <p className="mt-1 text-sm text-gray-500">
-                        Crie seu primeiro produto.
+                        {hasFilters
+                          ? 'Tente ajustar os filtros para encontrar outros produtos.'
+                          : 'Crie seu primeiro produto.'}
                       </p>
                     </div>
                   </td>
                 </tr>
               )}
 
-              {data?.data.map((product) => (
-                <tr
-                  key={product.id}
-                  className="border-b border-[#ebe6e7] h-[37px]"
-                >
-                  <td>
-                    <span className="text-sm text-[#6a7282]">
-                      {product.nome}
-                    </span>
-                  </td>
-
-                  <td>
-                    {product.ativo ? (
-                      <span className="text-green-600 border-green-200 border bg-green-100 text-xs font-medium rounded px-2 py-0.5">
-                        Ativo
+              {!isError &&
+                data?.data.map((product) => (
+                  <tr
+                    key={product.id}
+                    className="border-b border-[#ebe6e7] h-[37px]"
+                  >
+                    <td>
+                      <span className="text-sm text-[#6a7282]">
+                        {product.nome}
                       </span>
-                    ) : (
-                      <span className="text-red-600 border-red-200 border bg-red-100 text-xs font-medium rounded px-2 py-0.5">
-                        Inativo
+                    </td>
+
+                    <td>
+                      {product.ativo ? (
+                        <span className="text-green-600 border-green-200 border bg-green-100 text-xs font-medium rounded px-2 py-0.5">
+                          Ativo
+                        </span>
+                      ) : (
+                        <span className="text-red-600 border-red-200 border bg-red-100 text-xs font-medium rounded px-2 py-0.5">
+                          Inativo
+                        </span>
+                      )}
+                    </td>
+
+                    <td>
+                      <span className="text-sm text-gray-600">
+                        {categories.find(
+                          (category) => category.key === product.categoria,
+                        )?.name || product.categoria}
                       </span>
-                    )}
-                  </td>
+                    </td>
 
-                  <td>
-                    <span className="text-sm text-gray-600">
-                      {categories.find(
-                        (category) => category.key === product.categoria,
-                      )?.name || product.categoria}
-                    </span>
-                  </td>
+                    <td>
+                      <span className="text-sm text-gray-600">
+                        {product.preco.toLocaleString('pt-BR', {
+                          style: 'currency',
+                          currency: 'BRL',
+                        })}
+                      </span>
+                    </td>
 
-                  <td>
-                    <span className="text-sm text-gray-600">
-                      {product.preco.toLocaleString('pt-BR', {
-                        style: 'currency',
-                        currency: 'BRL',
-                      })}
-                    </span>
-                  </td>
-
-                  <td>
-                    <span className="text-sm text-gray-600">
-                      {product.estoque}
-                    </span>
-                  </td>
-                </tr>
-              ))}
+                    <td>
+                      <span className="text-sm text-gray-600">
+                        {product.estoque}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>
 
         {!isLoading && !isError && data && (
-          <footer className="border-t border-gray-200 px-6 py-4">
-            <p className="text-sm text-gray-500">
-              {data.total} produto{data.total !== 1 ? 's' : ''}
-            </p>
+          <footer className="flex flex-col gap-4 border-t border-gray-200 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+              <p className="text-sm text-gray-500">
+                Mostrando {firstItem}–{lastItem} de {data.total} produto
+                {data.total !== 1 ? 's' : ''}
+              </p>
+
+              {isFetching && (
+                <span
+                  className="text-xs text-gray-400"
+                  role="status"
+                  aria-live="polite"
+                >
+                  Atualizando...
+                </span>
+              )}
+            </div>
+
+            {data.totalPages > 1 && (
+              <nav
+                className="flex items-center gap-1"
+                aria-label="Paginação de produtos"
+              >
+                <button
+                  type="button"
+                  aria-label="Ir para a página anterior"
+                  disabled={page === 1 || isFetching}
+                  onClick={() => handlePageChange(page - 1)}
+                  className="inline-flex size-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <Icons.ChevronLeft />
+                </button>
+
+                {paginationItems.map((item) => {
+                  if (item === 'ellipsis') {
+                    ellipsisCount += 1
+
+                    return (
+                      <span
+                        key={`ellipsis-${ellipsisCount}`}
+                        className="inline-flex size-9 items-center justify-center text-sm text-gray-400"
+                        aria-hidden="true"
+                      >
+                        …
+                      </span>
+                    )
+                  }
+
+                  return (
+                    <button
+                      key={item}
+                      type="button"
+                      aria-label={`Ir para a página ${item}`}
+                      aria-current={item === page ? 'page' : undefined}
+                      disabled={item === page || isFetching}
+                      onClick={() => handlePageChange(item)}
+                      className={[
+                        'inline-flex size-9 items-center justify-center rounded-lg border text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 disabled:cursor-not-allowed',
+                        item === page
+                          ? 'border-gray-900 bg-gray-900 text-white'
+                          : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50 disabled:opacity-60',
+                      ].join(' ')}
+                    >
+                      {item}
+                    </button>
+                  )
+                })}
+
+                <button
+                  type="button"
+                  aria-label="Ir para a próxima página"
+                  disabled={page === data.totalPages || isFetching}
+                  onClick={() => handlePageChange(page + 1)}
+                  className="inline-flex size-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <Icons.ChevronRight />
+                </button>
+              </nav>
+            )}
           </footer>
         )}
       </section>
