@@ -1,3 +1,5 @@
+export { getPaginationItems } from '../../components/data-table/paginationUtils.ts'
+
 export const PRODUCTS_PAGE_SIZE = 10
 
 export interface ProductSearchState {
@@ -9,8 +11,6 @@ export interface ProductSearchState {
 export type ProductSearchParamChanges = Partial<
   Pick<ProductSearchState, 'page' | 'search' | 'category'>
 >
-
-export type PaginationItem = number | 'ellipsis'
 
 function getOptionalParam(params: URLSearchParams, key: string) {
   const value = params.get(key)?.trim()
@@ -70,36 +70,4 @@ export function updateProductSearchParams(
   }
 
   return nextParams
-}
-
-export function getPaginationItems(
-  currentPage: number,
-  totalPages: number,
-): PaginationItem[] {
-  if (totalPages <= 0) {
-    return []
-  }
-
-  const page = Math.min(Math.max(currentPage, 1), totalPages)
-
-  if (totalPages <= 5) {
-    return Array.from({ length: totalPages }, (_, index) => index + 1)
-  }
-
-  if (page <= 3) {
-    return [1, 2, 3, 4, 'ellipsis', totalPages]
-  }
-
-  if (page >= totalPages - 2) {
-    return [
-      1,
-      'ellipsis',
-      totalPages - 3,
-      totalPages - 2,
-      totalPages - 1,
-      totalPages,
-    ]
-  }
-
-  return [1, 'ellipsis', page - 1, page, page + 1, 'ellipsis', totalPages]
 }

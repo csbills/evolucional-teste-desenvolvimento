@@ -1,10 +1,17 @@
 import { useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
-import { Icons } from '../../components/icons'
-import { useProducts } from '../../hooks/products/useProducts'
 import {
-  getPaginationItems,
+  DataTable,
+  type DataTableColumn,
+} from '../../components/data-table/DataTable'
+import { DataTablePagination } from '../../components/data-table/DataTablePagination'
+import { Icons } from '../../components/icons'
+import { ProductsEmptyState } from '../../components/products/ProductsEmptyState'
+import { ProductsErrorState } from '../../components/products/ProductsErrorState'
+import { useProducts } from '../../hooks/products/useProducts'
+import type { Product } from '../../types/product'
+import {
   PRODUCTS_PAGE_SIZE,
   parseProductSearchParams,
   updateProductSearchParams,
@@ -19,6 +26,59 @@ const categories = [
   { key: 'Acessorios', name: 'Acessórios' },
 ]
 
+const productColumns: DataTableColumn<Product>[] = [
+  {
+    key: 'name',
+    header: 'Produto',
+    render: (product) => (
+      <span className="text-sm text-[#6a7282]">{product.nome}</span>
+    ),
+  },
+  {
+    key: 'status',
+    header: 'Status',
+    render: (product) =>
+      product.ativo ? (
+        <span className="rounded border border-green-200 bg-green-100 px-2 py-0.5 text-xs font-medium text-green-600">
+          Ativo
+        </span>
+      ) : (
+        <span className="rounded border border-red-200 bg-red-100 px-2 py-0.5 text-xs font-medium text-red-600">
+          Inativo
+        </span>
+      ),
+  },
+  {
+    key: 'category',
+    header: 'Categoria',
+    render: (product) => (
+      <span className="text-sm text-gray-600">
+        {categories.find((category) => category.key === product.categoria)
+          ?.name || product.categoria}
+      </span>
+    ),
+  },
+  {
+    key: 'price',
+    header: 'Preço',
+    render: (product) => (
+      <span className="text-sm text-gray-600">
+        {product.preco.toLocaleString('pt-BR', {
+          style: 'currency',
+          currency: 'BRL',
+        })}
+      </span>
+    ),
+  },
+  {
+    key: 'stock',
+    header: 'Estoque',
+    render: (product) => (
+      <span className="text-sm text-gray-600">{product.estoque}</span>
+    ),
+  },
+]
+
 export function ProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const { page, search, category } = parseProductSearchParams(searchParams)
@@ -29,12 +89,7 @@ export function ProductsPage() {
     category,
   })
 
-  const paginationItems = data ? getPaginationItems(page, data.totalPages) : []
   const hasFilters = Boolean(search || category)
-  const displayedPage = data?.page ?? page
-  const firstItem =
-    data && data.total > 0 ? (displayedPage - 1) * data.limit + 1 : 0
-  const lastItem = data ? Math.min(displayedPage * data.limit, data.total) : 0
 
   useEffect(() => {
     if (!data) {
@@ -54,8 +109,6 @@ export function ProductsPage() {
   const handlePageChange = (nextPage: number) => {
     setSearchParams(updateProductSearchParams(searchParams, { page: nextPage }))
   }
-
-  let ellipsisCount = 0
 
   return (
     <div className="space-y-6">
@@ -122,227 +175,34 @@ export function ProductsPage() {
           </select>
         </div>
 
-        <div className="mt-4 overflow-x-auto px-5">
-          <table className="w-full min-w-180 text-left" aria-busy={isFetching}>
-            <thead>
-              <tr>
-                <th className="text-[#101828] text-sm font-semibold leading-5">
-                  Produto
-                </th>
-
-                <th className="text-[#101828] text-sm font-semibold leading-5">
-                  Status
-                </th>
-
-                <th className="text-[#101828] text-sm font-semibold leading-5">
-                  Categoria
-                </th>
-
-                <th className="text-[#101828] text-sm font-semibold leading-5">
-                  Preço
-                </th>
-
-                <th className="text-[#101828] text-sm font-semibold leading-5">
-                  Estoque
-                </th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {isLoading && !data && (
-                <tr>
-                  <td colSpan={5} className="px-6 py-16 text-center">
-                    <p
-                      className="text-sm text-gray-500"
-                      role="status"
-                      aria-live="polite"
-                    >
-                      Carregando produtos...
-                    </p>
-                  </td>
-                </tr>
-              )}
-
-              {isError && (
-                <tr>
-                  <td colSpan={5} className="px-6 py-16 text-center">
-                    <div className="mx-auto flex max-w-sm flex-col items-center">
-                      <h2 className="text-sm font-medium text-gray-900">
-                        Não foi possível carregar os produtos
-                      </h2>
-
-                      <p className="mt-1 text-sm text-gray-500">
-                        Verifique a conexão com a API e tente novamente.
-                      </p>
-
-                      <button
-                        type="button"
-                        onClick={() => void refetch()}
-                        disabled={isFetching}
-                        className="mt-4 inline-flex h-9 items-center justify-center rounded-lg border border-gray-300 px-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        Tentar novamente
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              )}
-
-              {!isLoading && !isError && data?.data.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="px-6 py-16 text-center">
-                    <div className="mx-auto flex max-w-sm flex-col items-center">
-                      <div className="flex size-12 items-center justify-center rounded-full bg-gray-100 text-gray-500">
-                        <Icons.Box />
-                      </div>
-
-                      <h2 className="mt-4 text-sm font-medium text-gray-900">
-                        Nenhum produto encontrado
-                      </h2>
-
-                      <p className="mt-1 text-sm text-gray-500">
-                        {hasFilters
-                          ? 'Tente ajustar os filtros para encontrar outros produtos.'
-                          : 'Crie seu primeiro produto.'}
-                      </p>
-                    </div>
-                  </td>
-                </tr>
-              )}
-
-              {!isError &&
-                data?.data.map((product) => (
-                  <tr
-                    key={product.id}
-                    className="border-b border-[#ebe6e7] h-[37px]"
-                  >
-                    <td>
-                      <span className="text-sm text-[#6a7282]">
-                        {product.nome}
-                      </span>
-                    </td>
-
-                    <td>
-                      {product.ativo ? (
-                        <span className="text-green-600 border-green-200 border bg-green-100 text-xs font-medium rounded px-2 py-0.5">
-                          Ativo
-                        </span>
-                      ) : (
-                        <span className="text-red-600 border-red-200 border bg-red-100 text-xs font-medium rounded px-2 py-0.5">
-                          Inativo
-                        </span>
-                      )}
-                    </td>
-
-                    <td>
-                      <span className="text-sm text-gray-600">
-                        {categories.find(
-                          (category) => category.key === product.categoria,
-                        )?.name || product.categoria}
-                      </span>
-                    </td>
-
-                    <td>
-                      <span className="text-sm text-gray-600">
-                        {product.preco.toLocaleString('pt-BR', {
-                          style: 'currency',
-                          currency: 'BRL',
-                        })}
-                      </span>
-                    </td>
-
-                    <td>
-                      <span className="text-sm text-gray-600">
-                        {product.estoque}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          columns={productColumns}
+          data={data?.data ?? []}
+          getRowKey={(product) => product.id}
+          isLoading={isLoading}
+          isError={isError}
+          isFetching={isFetching}
+          emptyState={<ProductsEmptyState hasFilters={hasFilters} />}
+          errorState={
+            <ProductsErrorState
+              isRetrying={isFetching}
+              onRetry={() => void refetch()}
+            />
+          }
+        />
 
         {!isLoading && !isError && data && (
-          <footer className="flex flex-col gap-4 border-t border-gray-200 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-3">
-              <p className="text-sm text-gray-500">
-                Mostrando {firstItem}–{lastItem} de {data.total} produto
-                {data.total !== 1 ? 's' : ''}
-              </p>
-
-              {isFetching && (
-                <span
-                  className="text-xs text-gray-400"
-                  role="status"
-                  aria-live="polite"
-                >
-                  Atualizando...
-                </span>
-              )}
-            </div>
-
-            {data.totalPages > 1 && (
-              <nav
-                className="flex items-center gap-1"
-                aria-label="Paginação de produtos"
-              >
-                <button
-                  type="button"
-                  aria-label="Ir para a página anterior"
-                  disabled={page === 1 || isFetching}
-                  onClick={() => handlePageChange(page - 1)}
-                  className="inline-flex size-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  <Icons.ChevronLeft />
-                </button>
-
-                {paginationItems.map((item) => {
-                  if (item === 'ellipsis') {
-                    ellipsisCount += 1
-
-                    return (
-                      <span
-                        key={`ellipsis-${ellipsisCount}`}
-                        className="inline-flex size-9 items-center justify-center text-sm text-gray-400"
-                        aria-hidden="true"
-                      >
-                        …
-                      </span>
-                    )
-                  }
-
-                  return (
-                    <button
-                      key={item}
-                      type="button"
-                      aria-label={`Ir para a página ${item}`}
-                      aria-current={item === page ? 'page' : undefined}
-                      disabled={item === page || isFetching}
-                      onClick={() => handlePageChange(item)}
-                      className={[
-                        'inline-flex size-9 items-center justify-center rounded-lg border text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 disabled:cursor-not-allowed',
-                        item === page
-                          ? 'border-gray-900 bg-gray-900 text-white'
-                          : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50 disabled:opacity-60',
-                      ].join(' ')}
-                    >
-                      {item}
-                    </button>
-                  )
-                })}
-
-                <button
-                  type="button"
-                  aria-label="Ir para a próxima página"
-                  disabled={page === data.totalPages || isFetching}
-                  onClick={() => handlePageChange(page + 1)}
-                  className="inline-flex size-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  <Icons.ChevronRight />
-                </button>
-              </nav>
-            )}
-          </footer>
+          <DataTablePagination
+            page={page}
+            displayedPage={data.page}
+            total={data.total}
+            limit={data.limit}
+            totalPages={data.totalPages}
+            isFetching={isFetching}
+            itemLabel="produto"
+            ariaLabel="Paginação de produtos"
+            onPageChange={handlePageChange}
+          />
         )}
       </section>
     </div>
