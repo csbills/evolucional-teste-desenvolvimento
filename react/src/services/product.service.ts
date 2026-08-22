@@ -39,3 +39,9 @@ export async function getProducts({
     totalPages: Math.ceil(total / limit),
   }
 }
+
+export async function getProductById(id: number): Promise<Product> {
+  const response = await api<Product>(`/produtos/${id}`)
+
+  return response.data
+}

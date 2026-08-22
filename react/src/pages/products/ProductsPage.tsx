@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 
 import {
   DataTable,
@@ -26,58 +26,70 @@ const categories = [
   { key: 'Acessorios', name: 'Acessórios' },
 ]
 
-const productColumns: DataTableColumn<Product>[] = [
-  {
-    key: 'name',
-    header: 'Produto',
-    render: (product) => (
-      <span className="text-sm text-[#6a7282]">{product.nome}</span>
-    ),
-  },
-  {
-    key: 'status',
-    header: 'Status',
-    render: (product) =>
-      product.ativo ? (
-        <span className="rounded border border-green-200 bg-green-100 px-2 py-0.5 text-xs font-medium text-green-600">
-          Ativo
-        </span>
-      ) : (
-        <span className="rounded border border-red-200 bg-red-100 px-2 py-0.5 text-xs font-medium text-red-600">
-          Inativo
+function createProductColumns(
+  detailsSearch: string,
+): DataTableColumn<Product>[] {
+  const detailPath = (productId: number) =>
+    `/produtos/${productId}${detailsSearch ? `?${detailsSearch}` : ''}`
+
+  return [
+    {
+      key: 'name',
+      header: 'Produto',
+      render: (product) => (
+        <Link
+          to={detailPath(product.id)}
+          className="text-sm text-[#6a7282] transition-colors hover:text-gray-950 hover:underline focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+        >
+          {product.nome}
+        </Link>
+      ),
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      render: (product) =>
+        product.ativo ? (
+          <span className="rounded border border-green-200 bg-green-100 px-2 py-0.5 text-xs font-medium text-green-600">
+            Ativo
+          </span>
+        ) : (
+          <span className="rounded border border-red-200 bg-red-100 px-2 py-0.5 text-xs font-medium text-red-600">
+            Inativo
+          </span>
+        ),
+    },
+    {
+      key: 'category',
+      header: 'Categoria',
+      render: (product) => (
+        <span className="text-sm text-gray-600">
+          {categories.find((category) => category.key === product.categoria)
+            ?.name || product.categoria}
         </span>
       ),
-  },
-  {
-    key: 'category',
-    header: 'Categoria',
-    render: (product) => (
-      <span className="text-sm text-gray-600">
-        {categories.find((category) => category.key === product.categoria)
-          ?.name || product.categoria}
-      </span>
-    ),
-  },
-  {
-    key: 'price',
-    header: 'Preço',
-    render: (product) => (
-      <span className="text-sm text-gray-600">
-        {product.preco.toLocaleString('pt-BR', {
-          style: 'currency',
-          currency: 'BRL',
-        })}
-      </span>
-    ),
-  },
-  {
-    key: 'stock',
-    header: 'Estoque',
-    render: (product) => (
-      <span className="text-sm text-gray-600">{product.estoque}</span>
-    ),
-  },
-]
+    },
+    {
+      key: 'price',
+      header: 'Preço',
+      render: (product) => (
+        <span className="text-sm text-gray-600">
+          {product.preco.toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL',
+          })}
+        </span>
+      ),
+    },
+    {
+      key: 'stock',
+      header: 'Estoque',
+      render: (product) => (
+        <span className="text-sm text-gray-600">{product.estoque}</span>
+      ),
+    },
+  ]
+}
 
 export function ProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -90,6 +102,7 @@ export function ProductsPage() {
   })
 
   const hasFilters = Boolean(search || category)
+  const productColumns = createProductColumns(searchParams.toString())
 
   useEffect(() => {
     if (!data) {
