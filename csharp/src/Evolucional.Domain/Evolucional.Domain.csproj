@@ -34,6 +34,9 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Entities\Aluno.cs" />
+    <Compile Include="Entities\Matricula.cs" />
+    <Compile Include="Entities\Turma.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

@@ -33,8 +33,14 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Abstractions\IAlunoRepository.cs" />
+    <Compile Include="Abstractions\IConnectionFactory.cs" />
+    <Compile Include="Abstractions\IMatriculaRepository.cs" />
+    <Compile Include="Abstractions\ITurmaRepository.cs" />
+    <Compile Include="Common\PagedResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
