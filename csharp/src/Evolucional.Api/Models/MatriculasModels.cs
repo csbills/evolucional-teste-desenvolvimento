@@ -10,17 +10,4 @@ namespace Evolucional.Api.Models
         [Required]
         public int? TurmaId { get; set; }
     }
-
-    public sealed class ApiErrorResponse
-    {
-        public ApiErrorResponse(string code, string message)
-        {
-            Code = code;
-            Message = message;
-        }
-
-        public string Code { get; private set; }
-
-        public string Message { get; private set; }
-    }
 }

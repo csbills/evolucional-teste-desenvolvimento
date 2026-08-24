@@ -64,10 +64,12 @@
     <Compile Include="Controllers\MatriculasController.cs" />
     <Compile Include="Controllers\RelatoriosController.cs" />
     <Compile Include="Controllers\TurmasController.cs" />
+    <Compile Include="Filters\ApiExceptionFilterAttribute.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\AlunosModels.cs" />
+    <Compile Include="Models\ApiErrorResponse.cs" />
     <Compile Include="Models\MatriculasModels.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

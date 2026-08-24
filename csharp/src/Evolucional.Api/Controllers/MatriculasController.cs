@@ -4,7 +4,6 @@ using System.Web.Http;
 using Evolucional.Api.Composition;
 using Evolucional.Api.Models;
 using Evolucional.Application.Matriculas;
-using Evolucional.Domain.Exceptions;
 
 namespace Evolucional.Api.Controllers
 {
@@ -29,40 +28,29 @@ namespace Evolucional.Api.Controllers
         {
             if (request == null)
             {
-                return BadRequest("O corpo da requisição é obrigatório.");
+                return Content(
+                    HttpStatusCode.BadRequest,
+                    new ApiErrorResponse(
+                        "REQUISICAO_INVALIDA",
+                        "O corpo da requisição é obrigatório."));
             }
 
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return Content(
+                    HttpStatusCode.BadRequest,
+                    new ApiErrorResponse(
+                        "REQUISICAO_INVALIDA",
+                        "A requisição contém dados inválidos."));
             }
 
-            try
+            var matricula = _service.Criar(new CriarMatriculaCommand
             {
-                var matricula = _service.Criar(new CriarMatriculaCommand
-                {
-                    AlunoId = request.AlunoId.Value,
-                    TurmaId = request.TurmaId.Value
-                });
+                AlunoId = request.AlunoId.Value,
+                TurmaId = request.TurmaId.Value
+            });
 
-                return Content(HttpStatusCode.Created, matricula);
-            }
-            catch (ResourceNotFoundException exception)
-            {
-                return Content(
-                    HttpStatusCode.NotFound,
-                    new ApiErrorResponse(exception.Code, exception.Message));
-            }
-            catch (BusinessRuleException exception)
-            {
-                return Content(
-                    HttpStatusCode.Conflict,
-                    new ApiErrorResponse(exception.Code, exception.Message));
-            }
-            catch (ArgumentOutOfRangeException exception)
-            {
-                return BadRequest(exception.Message);
-            }
+            return Content(HttpStatusCode.Created, matricula);
         }
     }
 }

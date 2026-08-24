@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Net;
 using System.Web.Http;
 using Evolucional.Api.Composition;
 using Evolucional.Api.Models;
@@ -26,36 +27,21 @@ namespace Evolucional.Api.Controllers
         [Route("")]
         public IHttpActionResult Listar(string nome = null, int page = 1, int pageSize = 10)
         {
-            try
-            {
-                var result = _service.Listar(nome, page, pageSize);
-                var response = new PagedResponse<AlunoDto>(
-                    result.Items.ToArray(),
-                    result.Total,
-                    page,
-                    pageSize);
+            var result = _service.Listar(nome, page, pageSize);
+            var response = new PagedResponse<AlunoDto>(
+                result.Items.ToArray(),
+                result.Total,
+                page,
+                pageSize);
 
-                return Ok(response);
-            }
-            catch (ArgumentOutOfRangeException exception)
-            {
-                return BadRequest(exception.Message);
-            }
+            return Ok(response);
         }
 
         [HttpGet]
         [Route("{id:int}", Name = "AlunoPorId")]
         public IHttpActionResult ObterPorId(int id)
         {
-            try
-            {
-                var aluno = _service.ObterPorId(id);
-                return aluno == null ? (IHttpActionResult)NotFound() : Ok(aluno);
-            }
-            catch (ArgumentOutOfRangeException exception)
-            {
-                return BadRequest(exception.Message);
-            }
+            return Ok(_service.ObterPorId(id));
         }
 
         [HttpPost]
@@ -64,30 +50,31 @@ namespace Evolucional.Api.Controllers
         {
             if (request == null)
             {
-                return BadRequest("O corpo da requisição é obrigatório.");
+                return Content(
+                    HttpStatusCode.BadRequest,
+                    new ApiErrorResponse(
+                        "REQUISICAO_INVALIDA",
+                        "O corpo da requisição é obrigatório."));
             }
 
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return Content(
+                    HttpStatusCode.BadRequest,
+                    new ApiErrorResponse(
+                        "REQUISICAO_INVALIDA",
+                        "A requisição contém dados inválidos."));
             }
 
-            try
+            var id = _service.Criar(new CriarAlunoCommand
             {
-                var id = _service.Criar(new CriarAlunoCommand
-                {
-                    Nome = request.Nome,
-                    Email = request.Email,
-                    DataNascimento = request.DataNascimento.Value
-                });
+                Nome = request.Nome,
+                Email = request.Email,
+                DataNascimento = request.DataNascimento.Value
+            });
 
-                var aluno = _service.ObterPorId(id);
-                return CreatedAtRoute("AlunoPorId", new { id }, aluno);
-            }
-            catch (ArgumentException exception)
-            {
-                return BadRequest(exception.Message);
-            }
+            var aluno = _service.ObterPorId(id);
+            return CreatedAtRoute("AlunoPorId", new { id }, aluno);
         }
 
         [HttpPut]
@@ -96,53 +83,38 @@ namespace Evolucional.Api.Controllers
         {
             if (request == null)
             {
-                return BadRequest("O corpo da requisição é obrigatório.");
+                return Content(
+                    HttpStatusCode.BadRequest,
+                    new ApiErrorResponse(
+                        "REQUISICAO_INVALIDA",
+                        "O corpo da requisição é obrigatório."));
             }
 
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return Content(
+                    HttpStatusCode.BadRequest,
+                    new ApiErrorResponse(
+                        "REQUISICAO_INVALIDA",
+                        "A requisição contém dados inválidos."));
             }
 
-            try
+            _service.Atualizar(id, new AtualizarAlunoCommand
             {
-                var atualizado = _service.Atualizar(id, new AtualizarAlunoCommand
-                {
-                    Nome = request.Nome,
-                    Email = request.Email,
-                    DataNascimento = request.DataNascimento.Value
-                });
+                Nome = request.Nome,
+                Email = request.Email,
+                DataNascimento = request.DataNascimento.Value
+            });
 
-                if (!atualizado)
-                {
-                    return NotFound();
-                }
-
-                return Ok(_service.ObterPorId(id));
-            }
-            catch (ArgumentException exception)
-            {
-                return BadRequest(exception.Message);
-            }
+            return Ok(_service.ObterPorId(id));
         }
 
         [HttpDelete]
         [Route("{id:int}")]
         public IHttpActionResult Desativar(int id)
         {
-            try
-            {
-                if (!_service.Desativar(id))
-                {
-                    return NotFound();
-                }
-
-                return Ok();
-            }
-            catch (ArgumentOutOfRangeException exception)
-            {
-                return BadRequest(exception.Message);
-            }
+            _service.Desativar(id);
+            return Ok();
         }
     }
 }

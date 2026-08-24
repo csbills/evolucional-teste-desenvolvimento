@@ -3,6 +3,7 @@ using System.Linq;
 using Evolucional.Application.Abstractions;
 using Evolucional.Application.Common;
 using Evolucional.Domain.Entities;
+using Evolucional.Domain.Exceptions;
 
 namespace Evolucional.Application.Alunos
 {
@@ -32,7 +33,15 @@ namespace Evolucional.Application.Alunos
             ValidarId(id);
 
             var aluno = _repository.ObterPorId(id);
-            return aluno == null ? null : Mapear(aluno);
+
+            if (aluno == null)
+            {
+                throw new ResourceNotFoundException(
+                    "ALUNO_NAO_ENCONTRADO",
+                    "O aluno informado não foi encontrado.");
+            }
+
+            return Mapear(aluno);
         }
 
         public int Criar(CriarAlunoCommand command)
@@ -66,20 +75,29 @@ namespace Evolucional.Application.Alunos
 
             if (aluno == null)
             {
-                return false;
+                throw new ResourceNotFoundException(
+                    "ALUNO_NAO_ENCONTRADO",
+                    "O aluno informado não foi encontrado.");
             }
 
             aluno.Nome = NormalizarTexto(command.Nome, nameof(command.Nome));
             aluno.Email = NormalizarTexto(command.Email, nameof(command.Email));
             aluno.DataNascimento = command.DataNascimento;
 
-            return _repository.Atualizar(aluno) > 0;
+            _repository.Atualizar(aluno);
+            return true;
         }
 
-        public bool Desativar(int id)
+        public void Desativar(int id)
         {
             ValidarId(id);
-            return _repository.Desativar(id) > 0;
+
+            if (_repository.Desativar(id) == 0)
+            {
+                throw new ResourceNotFoundException(
+                    "ALUNO_NAO_ENCONTRADO",
+                    "O aluno informado não foi encontrado.");
+            }
         }
 
         private static void ValidarId(int id)
