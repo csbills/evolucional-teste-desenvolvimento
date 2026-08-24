@@ -44,6 +44,8 @@
     <Compile Include="Abstractions\ITurmaRepository.cs" />
     <Compile Include="Common\PagedResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Turmas\TurmaDtos.cs" />
+    <Compile Include="Turmas\TurmaService.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Evolucional.Domain\Evolucional.Domain.csproj">
