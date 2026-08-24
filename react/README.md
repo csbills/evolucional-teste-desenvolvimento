@@ -74,8 +74,9 @@ A busca possui debounce de 400 ms para evitar requisições a cada tecla digitad
 npm run dev      # inicia o servidor de desenvolvimento
 npm run build    # verifica os tipos e gera a versão de produção
 npm run lint     # executa as validações do Biome
+npm test         # executa os testes automatizados
 npm run format   # formata os arquivos do projeto
 npm run preview  # serve a versão de produção localmente
 ```
 
-O projeto ainda não possui um script de testes automatizados configurado.
+Os testes de componentes usam React Testing Library, Vitest e jsdom.
