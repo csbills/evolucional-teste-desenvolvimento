@@ -1,0 +1,17 @@
+.vs/
+**/bin/
+**/obj/
+packages/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Arquivos locais de configuração
+*.local.config
+appsettings.Local.json
+
+# Logs e artefatos temporários
+*.log
+TestResults/
+
