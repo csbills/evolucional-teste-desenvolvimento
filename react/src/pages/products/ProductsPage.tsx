@@ -7,6 +7,7 @@ import {
 } from '../../components/data-table/DataTable'
 import { DataTablePagination } from '../../components/data-table/DataTablePagination'
 import { Icons } from '../../components/icons'
+import { ProductDeleteAction } from '../../components/products/ProductDeleteAction'
 import { ProductsEmptyState } from '../../components/products/ProductsEmptyState'
 import { ProductsErrorState } from '../../components/products/ProductsErrorState'
 import { useProducts } from '../../hooks/products/useProducts'
@@ -87,6 +88,11 @@ function createProductColumns(
       render: (product) => (
         <span className="text-sm text-gray-600">{product.estoque}</span>
       ),
+    },
+    {
+      key: 'actions',
+      header: 'Ações',
+      render: (product) => <ProductDeleteAction product={product} />,
     },
   ]
 }

@@ -66,3 +66,9 @@ export async function updateProduct(
 
   return response.data
 }
+
+export async function deleteProduct(id: number): Promise<void> {
+  await api<unknown>(`/produtos/${id}`, {
+    method: 'DELETE',
+  })
+}

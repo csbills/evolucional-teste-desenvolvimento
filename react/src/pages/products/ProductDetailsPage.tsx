@@ -1,6 +1,9 @@
-import { Link, useParams, useSearchParams } from 'react-router-dom'
+import { useState } from 'react'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 
+import { ProductDeleteDialog } from '../../components/products/ProductDeleteDialog'
 import { useProduct } from '../../hooks/products/useProduct'
+import { useDeleteProduct } from '../../hooks/products/useProductMutations'
 import { parseProductId } from './productDetails'
 
 const categoryNames: Record<string, string> = {
@@ -15,6 +18,7 @@ const categoryNames: Record<string, string> = {
 export function ProductDetailsPage() {
   const { id } = useParams<{ id: string }>()
   const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
   const productId = parseProductId(id)
   const queryString = searchParams.toString()
   const productsPath = `/produtos${queryString ? `?${queryString}` : ''}`
@@ -29,6 +33,24 @@ export function ProductDetailsPage() {
     isError,
     refetch,
   } = useProduct(productId)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
+  const deleteProductMutation = useDeleteProduct()
+
+  const handleDeleteConfirm = async () => {
+    if (productId === null) {
+      return
+    }
+
+    setDeleteError(null)
+
+    try {
+      await deleteProductMutation.mutateAsync(productId)
+      navigate(productsPath, { replace: true })
+    } catch {
+      setDeleteError('Não foi possível excluir o produto. Tente novamente.')
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -101,6 +123,17 @@ export function ProductDetailsPage() {
                 Editar produto
               </Link>
 
+              <button
+                type="button"
+                onClick={() => {
+                  setDeleteError(null)
+                  setIsDeleteDialogOpen(true)
+                }}
+                className="inline-flex h-9 items-center justify-center rounded-lg border border-red-200 px-3 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2"
+              >
+                Excluir produto
+              </button>
+
               {product.ativo ? (
                 <span className="w-fit rounded border border-green-200 bg-green-100 px-2 py-0.5 text-xs font-medium text-green-600">
                   Ativo
@@ -163,6 +196,17 @@ export function ProductDetailsPage() {
             </div>
           </dl>
         </section>
+      )}
+
+      {product && (
+        <ProductDeleteDialog
+          productName={product.nome}
+          isOpen={isDeleteDialogOpen}
+          isDeleting={deleteProductMutation.isPending}
+          error={deleteError}
+          onCancel={() => setIsDeleteDialogOpen(false)}
+          onConfirm={() => void handleDeleteConfirm()}
+        />
       )}
     </div>
   )
