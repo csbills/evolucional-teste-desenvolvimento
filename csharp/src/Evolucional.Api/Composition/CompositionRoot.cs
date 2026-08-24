@@ -1,6 +1,7 @@
 using Evolucional.Application.Abstractions;
 using Evolucional.Application.Alunos;
 using Evolucional.Application.Matriculas;
+using Evolucional.Application.Relatorios;
 using Evolucional.Application.Turmas;
 using Evolucional.Infrastructure.Data;
 using Evolucional.Infrastructure.Repositories;
@@ -37,6 +38,14 @@ namespace Evolucional.Api.Composition
                 alunoRepository,
                 turmaRepository,
                 matriculaRepository);
+        }
+
+        public static RelatorioService CreateRelatorioService()
+        {
+            IConnectionFactory connectionFactory = new SqlConnectionFactory();
+            IRelatorioRepository relatorioRepository = new RelatorioRepository(connectionFactory);
+
+            return new RelatorioService(relatorioRepository);
         }
     }
 }

@@ -43,10 +43,12 @@
     <Compile Include="Data\SqlConnectionFactory.cs" />
     <Compile Include="Repositories\AlunoRepository.cs" />
     <Compile Include="Repositories\MatriculaRepository.cs" />
+    <Compile Include="Repositories\RelatorioRepository.cs" />
     <Compile Include="Repositories\TurmaRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Sql\AlunoSql.cs" />
     <Compile Include="Sql\MatriculaSql.cs" />
+    <Compile Include="Sql\RelatorioSql.cs" />
     <Compile Include="Sql\TurmaSql.cs" />
   </ItemGroup>
   <ItemGroup>
