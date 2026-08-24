@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 
 import {
@@ -11,6 +11,7 @@ import { ProductDeleteAction } from '../../components/products/ProductDeleteActi
 import { ProductsEmptyState } from '../../components/products/ProductsEmptyState'
 import { ProductsErrorState } from '../../components/products/ProductsErrorState'
 import { useProducts } from '../../hooks/products/useProducts'
+import { useDebouncedValue } from '../../hooks/useDebouncedValue'
 import type { Product } from '../../types/product'
 import {
   PRODUCTS_PAGE_SIZE,
@@ -26,6 +27,8 @@ const categories = [
   { key: 'Componentes', name: 'Componentes' },
   { key: 'Acessorios', name: 'Acessórios' },
 ]
+
+const PRODUCT_SEARCH_DEBOUNCE_MS = 400
 
 function createProductColumns(
   detailsSearch: string,
@@ -100,12 +103,35 @@ function createProductColumns(
 export function ProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const { page, search, category } = parseProductSearchParams(searchParams)
+  const [searchInput, setSearchInput] = useState(search ?? '')
+  const debouncedSearch = useDebouncedValue(
+    searchInput,
+    PRODUCT_SEARCH_DEBOUNCE_MS,
+  )
   const { data, isLoading, isFetching, isError, refetch } = useProducts({
     page,
     limit: PRODUCTS_PAGE_SIZE,
     search,
     category,
   })
+
+  useEffect(() => {
+    setSearchInput(search ?? '')
+  }, [search])
+
+  useEffect(() => {
+    if (debouncedSearch === (search ?? '')) {
+      return
+    }
+
+    setSearchParams(
+      (currentParams) =>
+        updateProductSearchParams(currentParams, {
+          search: debouncedSearch,
+        }),
+      { replace: true },
+    )
+  }, [debouncedSearch, search, setSearchParams])
 
   const hasFilters = Boolean(search || category)
   const productColumns = createProductColumns(searchParams.toString())
@@ -119,14 +145,19 @@ export function ProductsPage() {
 
     if (page > lastAvailablePage) {
       setSearchParams(
-        updateProductSearchParams(searchParams, { page: lastAvailablePage }),
+        (currentParams) =>
+          updateProductSearchParams(currentParams, {
+            page: lastAvailablePage,
+          }),
         { replace: true },
       )
     }
-  }, [data, page, searchParams, setSearchParams])
+  }, [data, page, setSearchParams])
 
   const handlePageChange = (nextPage: number) => {
-    setSearchParams(updateProductSearchParams(searchParams, { page: nextPage }))
+    setSearchParams((currentParams) =>
+      updateProductSearchParams(currentParams, { page: nextPage }),
+    )
   }
 
   return (
@@ -159,14 +190,10 @@ export function ProductsPage() {
               type="search"
               placeholder="Buscar por nome..."
               aria-label="Buscar produtos por nome"
-              value={search ?? ''}
+              value={searchInput}
               onChange={(event) => {
-                setSearchParams(
-                  updateProductSearchParams(searchParams, {
-                    search: event.target.value,
-                  }),
-                  { replace: true },
-                )
+                const nextSearch = event.target.value
+                setSearchInput(nextSearch)
               }}
               className="h-10 w-full rounded-lg border border-gray-300 bg-white pl-9 pr-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-gray-400 focus:ring-2 focus:ring-gray-100"
             />
@@ -176,11 +203,10 @@ export function ProductsPage() {
             aria-label="Filtrar produtos por categoria"
             value={category ?? ''}
             onChange={(event) => {
-              setSearchParams(
-                updateProductSearchParams(searchParams, {
+              setSearchParams((currentParams) =>
+                updateProductSearchParams(currentParams, {
                   category: event.target.value,
                 }),
-                { replace: true },
               )
             }}
             className="h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-700 outline-none transition focus:border-gray-400 focus:ring-2 focus:ring-gray-100 sm:w-52"
