@@ -16,7 +16,12 @@ export function ProductDetailsPage() {
   const { id } = useParams<{ id: string }>()
   const [searchParams] = useSearchParams()
   const productId = parseProductId(id)
-  const productsPath = `/produtos${searchParams.toString() ? `?${searchParams.toString()}` : ''}`
+  const queryString = searchParams.toString()
+  const productsPath = `/produtos${queryString ? `?${queryString}` : ''}`
+  const editPath =
+    productId === null
+      ? '/produtos'
+      : `/produtos/${productId}/editar${queryString ? `?${queryString}` : ''}`
   const {
     data: product,
     isLoading,
@@ -88,15 +93,24 @@ export function ProductDetailsPage() {
               </p>
             </div>
 
-            {product.ativo ? (
-              <span className="w-fit rounded border border-green-200 bg-green-100 px-2 py-0.5 text-xs font-medium text-green-600">
-                Ativo
-              </span>
-            ) : (
-              <span className="w-fit rounded border border-red-200 bg-red-100 px-2 py-0.5 text-xs font-medium text-red-600">
-                Inativo
-              </span>
-            )}
+            <div className="flex flex-wrap items-center gap-3">
+              <Link
+                to={editPath}
+                className="inline-flex h-9 items-center justify-center rounded-lg border border-gray-300 px-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+              >
+                Editar produto
+              </Link>
+
+              {product.ativo ? (
+                <span className="w-fit rounded border border-green-200 bg-green-100 px-2 py-0.5 text-xs font-medium text-green-600">
+                  Ativo
+                </span>
+              ) : (
+                <span className="w-fit rounded border border-red-200 bg-red-100 px-2 py-0.5 text-xs font-medium text-red-600">
+                  Inativo
+                </span>
+              )}
+            </div>
           </header>
 
           <dl className="grid grid-cols-1 gap-x-6 gap-y-6 pt-6 sm:grid-cols-2 lg:grid-cols-3">

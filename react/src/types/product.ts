@@ -6,3 +6,5 @@ export interface Product {
   estoque: number
   ativo: boolean
 }
+
+export type ProductPayload = Omit<Product, 'id'>

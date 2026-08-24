@@ -136,13 +136,13 @@ export function ProductsPage() {
           </p>
         </div>
 
-        <button
-          type="button"
+        <Link
+          to="/produtos/novo"
           className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-gray-900 px-4 text-sm font-medium text-white transition-colors hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
         >
           <Icons.Plus />
           Novo produto
-        </button>
+        </Link>
       </section>
 
       <section className="rounded-xl border border-gray-200 bg-white">
