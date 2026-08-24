@@ -1,8 +1,10 @@
 using System;
 using System.Data;
+using System.Data.SqlClient;
 using Dapper;
 using Evolucional.Application.Abstractions;
 using Evolucional.Domain.Entities;
+using Evolucional.Domain.Exceptions;
 using Evolucional.Infrastructure.Data;
 using Evolucional.Infrastructure.Sql;
 
@@ -51,10 +53,17 @@ namespace Evolucional.Infrastructure.Repositories
                 throw new ArgumentNullException(nameof(matricula));
             }
 
-            return connection.QuerySingle<int>(
-                MatriculaSql.Inserir,
-                new { matricula.AlunoId, matricula.TurmaId },
-                transaction);
+            try
+            {
+                return connection.QuerySingle<int>(
+                    MatriculaSql.Inserir,
+                    new { matricula.AlunoId, matricula.TurmaId },
+                    transaction);
+            }
+            catch (SqlException exception) when (exception.Number == 2601 || exception.Number == 2627)
+            {
+                throw new MatriculaDuplicadaException();
+            }
         }
     }
 }

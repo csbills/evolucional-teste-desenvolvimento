@@ -1,5 +1,6 @@
 using Evolucional.Application.Abstractions;
 using Evolucional.Application.Alunos;
+using Evolucional.Application.Matriculas;
 using Evolucional.Application.Turmas;
 using Evolucional.Infrastructure.Data;
 using Evolucional.Infrastructure.Repositories;
@@ -22,6 +23,20 @@ namespace Evolucional.Api.Composition
             ITurmaRepository turmaRepository = new TurmaRepository(connectionFactory);
 
             return new TurmaService(turmaRepository);
+        }
+
+        public static MatriculaService CreateMatriculaService()
+        {
+            IConnectionFactory connectionFactory = new SqlConnectionFactory();
+            IAlunoRepository alunoRepository = new AlunoRepository(connectionFactory);
+            ITurmaRepository turmaRepository = new TurmaRepository(connectionFactory);
+            IMatriculaRepository matriculaRepository = new MatriculaRepository(connectionFactory);
+
+            return new MatriculaService(
+                connectionFactory,
+                alunoRepository,
+                turmaRepository,
+                matriculaRepository);
         }
     }
 }

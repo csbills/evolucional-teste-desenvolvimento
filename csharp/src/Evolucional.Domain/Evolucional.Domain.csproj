@@ -37,6 +37,11 @@
     <Compile Include="Entities\Aluno.cs" />
     <Compile Include="Entities\Matricula.cs" />
     <Compile Include="Entities\Turma.cs" />
+    <Compile Include="Exceptions\AlunoInativoException.cs" />
+    <Compile Include="Exceptions\BusinessRuleException.cs" />
+    <Compile Include="Exceptions\MatriculaDuplicadaException.cs" />
+    <Compile Include="Exceptions\ResourceNotFoundException.cs" />
+    <Compile Include="Exceptions\TurmaSemVagaException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

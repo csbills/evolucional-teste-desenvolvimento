@@ -61,11 +61,13 @@
     <Compile Include="Composition\CompositionRoot.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\AlunosController.cs" />
+    <Compile Include="Controllers\MatriculasController.cs" />
     <Compile Include="Controllers\TurmasController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\AlunosModels.cs" />
+    <Compile Include="Models\MatriculasModels.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -77,6 +79,10 @@
     <ProjectReference Include="..\Evolucional.Application\Evolucional.Application.csproj">
       <Project>{611E3271-48AE-4203-B85C-ADBFB8245D83}</Project>
       <Name>Evolucional.Application</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Evolucional.Domain\Evolucional.Domain.csproj">
+      <Project>{78C3BD81-9CD8-407E-AA6A-9C875D05CAE1}</Project>
+      <Name>Evolucional.Domain</Name>
     </ProjectReference>
     <ProjectReference Include="..\Evolucional.Infrastructure\Evolucional.Infrastructure.csproj">
       <Project>{F87180BA-283A-4BEE-97E5-2A857A971EBB}</Project>
