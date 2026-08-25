@@ -9,17 +9,29 @@ namespace Evolucional.Application.Turmas
     public sealed class TurmaService
     {
         private readonly ITurmaRepository _repository;
+        private readonly ITurmaCache _cache;
 
-        public TurmaService(ITurmaRepository repository)
+        public TurmaService(ITurmaRepository repository, ITurmaCache cache)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+            _cache = cache ?? throw new ArgumentNullException(nameof(cache));
         }
 
         public IReadOnlyList<TurmaDto> Listar()
         {
-            return _repository.Listar()
+            IReadOnlyList<TurmaDto> turmasEmCache;
+            if (_cache.TentarObter(out turmasEmCache))
+            {
+                return turmasEmCache;
+            }
+
+            var turmas = _repository.Listar()
                 .Select(Mapear)
                 .ToList();
+
+            _cache.Armazenar(turmas);
+
+            return turmas;
         }
 
         private static TurmaDto Mapear(Turma turma)

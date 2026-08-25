@@ -3,6 +3,7 @@ using Evolucional.Application.Alunos;
 using Evolucional.Application.Matriculas;
 using Evolucional.Application.Relatorios;
 using Evolucional.Application.Turmas;
+using Evolucional.Infrastructure.Caching;
 using Evolucional.Infrastructure.Data;
 using Evolucional.Infrastructure.Repositories;
 
@@ -10,6 +11,8 @@ namespace Evolucional.Api.Composition
 {
     public static class CompositionRoot
     {
+        private static readonly ITurmaCache TurmaCache = new MemoryTurmaCache();
+
         public static AlunoService CreateAlunoService()
         {
             IConnectionFactory connectionFactory = new SqlConnectionFactory();
@@ -23,7 +26,7 @@ namespace Evolucional.Api.Composition
             IConnectionFactory connectionFactory = new SqlConnectionFactory();
             ITurmaRepository turmaRepository = new TurmaRepository(connectionFactory);
 
-            return new TurmaService(turmaRepository);
+            return new TurmaService(turmaRepository, TurmaCache);
         }
 
         public static MatriculaService CreateMatriculaService()
@@ -37,7 +40,8 @@ namespace Evolucional.Api.Composition
                 connectionFactory,
                 alunoRepository,
                 turmaRepository,
-                matriculaRepository);
+                matriculaRepository,
+                TurmaCache);
         }
 
         public static RelatorioService CreateRelatorioService()

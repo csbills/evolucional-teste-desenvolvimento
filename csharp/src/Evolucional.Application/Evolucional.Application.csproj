@@ -42,6 +42,7 @@
     <Compile Include="Abstractions\IConnectionFactory.cs" />
     <Compile Include="Abstractions\IMatriculaRepository.cs" />
     <Compile Include="Abstractions\IRelatorioRepository.cs" />
+    <Compile Include="Abstractions\ITurmaCache.cs" />
     <Compile Include="Abstractions\ITurmaRepository.cs" />
     <Compile Include="Common\PagedResult.cs" />
     <Compile Include="Matriculas\MatriculaDtos.cs" />

@@ -39,6 +39,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Caching\MemoryTurmaCache.cs" />
     <Compile Include="Data\RepositoryBase.cs" />
     <Compile Include="Data\SqlConnectionFactory.cs" />
     <Compile Include="Repositories\AlunoRepository.cs" />
