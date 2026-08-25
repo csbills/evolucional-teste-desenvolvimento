@@ -42,6 +42,8 @@ csharp/
 │   ├── Evolucional.Application/    # Serviços, DTOs e contratos
 │   ├── Evolucional.Domain/         # Entidades e exceções de negócio
 │   └── Evolucional.Infrastructure/ # Dapper, SQL, repositórios e cache
+├── tests/
+│   └── Evolucional.Application.Tests/ # Testes das regras de matrícula
 ├── Evolucional.sln
 └── README.md
 ```
@@ -312,4 +314,13 @@ A solução foi compilada com sucesso usando:
 dotnet build .\Evolucional.sln --no-restore
 ```
 
-Os testes unitários da regra de matrícula foram executados temporariamente durante a etapa de testes e removidos posteriormente, conforme a decisão do desenvolvimento. Por isso, não há projeto de testes versionado nesta entrega.
+Os testes unitários das regras de matrícula estão em `tests/Evolucional.Application.Tests` e usam MSTest. Eles cobrem o fluxo de sucesso, aluno inativo, turma sem vaga, matrícula duplicada, aluno ou turma inexistente e rollback quando o decremento da vaga falha.
+
+No Visual Studio, os testes podem ser executados pelo Test Explorer. Pela linha de comando, após compilar a solução, use o `vstest.console.exe` instalado junto com o Visual Studio e informe o caminho do adaptador MSTest:
+
+```powershell
+vstest.console.exe .\tests\Evolucional.Application.Tests\bin\Evolucional.Application.Tests.dll `
+  /TestAdapterPath:.\packages\MSTest.TestAdapter.4.3.3\buildTransitive\net462
+```
+
+Validação atual: 7 testes aprovados, 0 falhas e 0 ignorados.
